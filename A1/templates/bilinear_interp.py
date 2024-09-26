@@ -27,6 +27,29 @@ def bilinear_interp(I, pt):
 
     if pt.shape != (2, 1):
         raise ValueError('Point size is incorrect.')
+    
+    x, y = pt[0, 0], pt[1, 0]
+    
+    # Get the four surrounding pixels based on point location (x1, y1), (x2, y2), (x1, y2), (x2, y1)
+    x1, y1 = round(np.floor(x)), round(np.floor(y))
+    x2, y2 = round(np.ceil(x)), round(np.floor(y))
+
+    # If points are outside of image, set to edge of image
+    if x1 < 0:
+        x1 = 0
+    if x2 >= I.shape[1]:
+        x2 = I.shape[1] - 1
+    if y1 < 0:
+        y1 = 0
+    if y2 >= I.shape[0]:
+        y2 = I.shape[0] - 1
+
+    # Interpolate pixel values in x direction
+    f1 = (x2 - x) * I[y1, x1] + (x - x1) * I[y1, x2]
+    f2 = (x2 - x) * I[y2, x1] + (x - x1) * I[y2, x2]
+
+    # Interpolate pixel values in y direction to get final pixel value for that point
+    b = round((y2 - y) * f1 + (y - y1) * f2)
 
     #------------------
 
