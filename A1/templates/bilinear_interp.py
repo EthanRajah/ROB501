@@ -44,12 +44,22 @@ def bilinear_interp(I, pt):
     if y2 >= I.shape[0]:
         y2 = I.shape[0] - 1
 
-    # Interpolate pixel values in x direction
-    f1 = (x2 - x) * I[y1, x1] + (x - x1) * I[y1, x2]
-    f2 = (x2 - x) * I[y2, x1] + (x - x1) * I[y2, x2]
-
-    # Interpolate pixel values in y direction to get final pixel value for that point
-    b = round((y2 - y) * f1 + (y - y1) * f2)
+    # Handle case where x1 = x2 and y1 = y2
+    if (x1 == x2 and y1 == y2):
+        b = I[y1, x1]
+    # Handle case where x1 = x2 (linear interpolation in y direction)
+    elif (x1 == x2):
+        b = round((y2 - y) * I[y1, x1] + (y - y1) * I[y2, x1])
+    # Handle case where y1 = y2 (linear interpolation in x direction)
+    elif (y1 == y2):
+        b = round((x2 - x) * I[y1, x1] + (x - x1) * I[y1, x2])
+    # General case
+    else:
+        # Interpolate pixel values in x direction
+        f1 = (x2 - x) * I[y1, x1] + (x - x1) * I[y1, x2]
+        f2 = (x2 - x) * I[y2, x1] + (x - x1) * I[y2, x2]
+        # Interpolate pixel values in y direction to get final pixel value for that point
+        b = round((y2 - y) * f1 + (y - y1) * f2)
 
     #------------------
 
