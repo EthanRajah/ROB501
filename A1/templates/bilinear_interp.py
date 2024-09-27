@@ -32,9 +32,9 @@ def bilinear_interp(I, pt):
     
     # Get the four surrounding pixels based on point location (x1, y1), (x2, y2), (x1, y2), (x2, y1)
     x1, y1 = round(np.floor(x)), round(np.floor(y))
-    x2, y2 = round(np.ceil(x)), round(np.floor(y))
+    x2, y2 = round(np.ceil(x)), round(np.ceil(y))
 
-    # If points are outside of image, set to edge of image
+    # If points are outside of image, set to four corners of image
     if x1 < 0:
         x1 = 0
     if x2 >= I.shape[1]:
