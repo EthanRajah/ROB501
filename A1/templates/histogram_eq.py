@@ -40,7 +40,8 @@ def histogram_eq(I):
     for i in range(I.shape[0]):
         for j in range(I.shape[1]):
             # Scale pixel intensity to 0-255 based on cumulative distribution
-            J[i, j] = round(255 * culm_dist[I[i, j]]).astype(np.uint8)
+            J[i, j] = 255 * culm_dist[I[i, j]]
+    J = J.astype(np.uint8)
 
     #------------------
 
