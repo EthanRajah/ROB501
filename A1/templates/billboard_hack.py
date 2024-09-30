@@ -34,20 +34,40 @@ def billboard_hack():
     #--- FILL ME IN ---
 
     # Let's do the histogram equalization first.
-
+    Ist = histogram_eq(Ist)
     # Compute the perspective homography we need...
-
+    H, A = dlt_homography(Iyd_pts, Ist_pts)
     # Main 'for' loop to do the warp and insertion - 
     # this could be vectorized to be faster if needed!
-
     # You may wish to make use of the contains_points() method
     # available in the matplotlib.path.Path class!
+    edge_walk = Path(Iyd_pts.T)
+    # Loop through all the pixels in the billboard section of the image we want to replace
+    for x in range(bbox[0,0], bbox[0,1]+1):
+        for y in range(bbox[1,0], bbox[1,2]+1):
+            if (edge_walk.contains_point((x,y))):
+                # Perform homography transformation from Iyd (warped shape) to Ist (original/rectangular shape)
+                pt = np.array(([x], [y], [1]))
+                pt_transform = H @ pt
+                pt_transform = pt_transform / pt_transform[2]
+                pt_transform = pt_transform[:-1]
+                # Interpolate pixel values from Ist now that coordinates are transformed and account for case where Ist is an RGB image
+                if (Ist.ndim == 3):
+                    pixel = (bilinear_interp(Ist[:,:,0], pt_transform), bilinear_interp(Ist[:,:,1], pt_transform), bilinear_interp(Ist[:,:,2], pt_transform))
+                    Ihack[y, x] = pixel
+                else:
+                    pixel = bilinear_interp(Ist, pt_transform)
+                    Ihack[y, x] = np.repeat(pixel, 3)
 
     #------------------
 
     # Visualize the result, if desired...
-    # plt.imshow(Ihack)
-    # plt.show()
-    # imwrite(Ihack, 'billboard_hacked.png');
+    import matplotlib.pyplot as plt
+    plt.imshow(Ihack)
+    plt.show()
+    #imwrite(Ihack, 'billboard_hacked.png')
 
     return Ihack
+
+if __name__ == "__main__":
+    billboard_hack()
