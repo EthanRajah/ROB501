@@ -43,8 +43,8 @@ def billboard_hack():
     # available in the matplotlib.path.Path class!
     edge_walk = Path(Iyd_pts.T)
     # Loop through all the pixels in the billboard section of the image we want to replace
-    for x in range(bbox[0,0], bbox[0,1]+1):
-        for y in range(bbox[1,0], bbox[1,2]+1):
+    for x in range(min(bbox[0]), max(bbox[0])+1):
+        for y in range(min(bbox[1]), max(bbox[1])+1):
             if (edge_walk.contains_point((x,y))):
                 # Perform homography transformation from Iyd (warped shape) to Ist (original/rectangular shape)
                 pt = np.array(([x], [y], [1]))
@@ -62,9 +62,9 @@ def billboard_hack():
     #------------------
 
     # Visualize the result, if desired...
-    import matplotlib.pyplot as plt
-    plt.imshow(Ihack)
-    plt.show()
+    #import matplotlib.pyplot as plt
+    #plt.imshow(Ihack)
+    #plt.show()
     #imwrite(Ihack, 'billboard_hacked.png')
 
     return Ihack
