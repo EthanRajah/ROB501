@@ -43,7 +43,6 @@ def bilinear_interp(I, pt):
         y1 = 0
     if y2 >= I.shape[0]:
         y2 = I.shape[0] - 1
-
     # Handle case where x1 = x2 and y1 = y2
     if (x1 == x2 and y1 == y2):
         b = I[y1, x1]
