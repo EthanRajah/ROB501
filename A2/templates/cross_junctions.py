@@ -121,10 +121,42 @@ def cross_junctions(I, bpoly, Wpts):
             left corner of the target. The array must contain float64 values.
     """
     #--- FILL ME IN ---
-    
-    # Define the bounding polygon as a Path object
-    path = Path(bpoly.T)
 
+    # Wpts contains 3D world points of junctions, with z = 0 (flat plane points)
+    # print(Wpts)
+    checker_square_size = Wpts[0, 1] - Wpts[0, 0]
+
+    # Estimate target bounding box in world coordinates for homography using the fact that the checkered square length is 63.5mm
+    # Bounding hyperparameters are estimated through trial and error checks to ensure the edges of the target are captured
+    bounding_hyperparameters = [1.4, 1.25]
+    W_minx = min(Wpts[0, :]) - bounding_hyperparameters[0]*checker_square_size
+    W_miny = min(Wpts[1, :]) - bounding_hyperparameters[1]*checker_square_size
+    W_maxx = max(Wpts[0, :]) + bounding_hyperparameters[0]*checker_square_size
+    W_maxy = max(Wpts[1, :]) + bounding_hyperparameters[1]*checker_square_size
+    Wbox = np.array([[W_minx, W_maxx, W_maxx, W_minx], [W_miny, W_miny, W_maxy, W_maxy]])
+
+    # Perform homography transformation from Wpts (original/rectangular shape) to bpoly (warped shape)
+    H, A = dlt_homography(Wbox, bpoly)
+
+    # Use patch size (hyperparameter) to define the size of the image patch around each world point to look at for saddle points
+    patch_size = 12
+    Ipts = np.zeros((2, Wpts.shape[1]))
+
+    # Compute vectorized homography
+    Wpts[2, :] = 1
+    Wpts_transform = H @ Wpts
+    Wpts_transform = Wpts_transform / Wpts_transform[2]
+    Wpts_transform = Wpts_transform[:-1]
+    Wpts_transform = np.round(Wpts_transform).astype(int)
+
+    # Using the transformed Wpts, the saddle points can be found in the image since the coordinates (indices) are now based on the perspective of the image
+    for i in range(Wpts.shape[1]):
+        x, y = Wpts_transform[:, i]
+        img_patch_filter = gaussian_filter(I[y-patch_size:y+patch_size, x-patch_size:x+patch_size], sigma=1)
+        junction_pt = saddle_point(img_patch_filter)
+        # Get cross junction coordinates relative to the upper left corner of the target using computed saddle point
+        Ipts[:, i] = (np.array([[x], [y]]) - patch_size + junction_pt).reshape(2)
+    
     #------------------
 
     correct = isinstance(Ipts, np.ndarray) and \

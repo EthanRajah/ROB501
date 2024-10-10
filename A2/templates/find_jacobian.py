@@ -26,7 +26,11 @@ def find_jacobian(K, Twc, Wpt):
     """
     #--- FILL ME IN ---
  
-    # Code goes here...
+    # Extract the rotation and translation components from the Twc matrix
+    R = Twc[:3, :3]
+    t = Twc[:3, 3]
+
+    
 
     #------------------
 
