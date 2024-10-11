@@ -55,21 +55,32 @@ def pose_estimate_nls(K, Twc_guess, Ipts, Wpts):
     # Some hints on structure are included below...
 
     # 1. Convert initial guess to parameter vector (6 x 1).
-    # ...
+    params = epose_from_hpose(Twc_guess)
 
     iter = 1
 
     # 2. Main loop - continue until convergence or maxIters.
     while True:
         # 3. Save previous best pose estimate.
-        # ...
+        params_prev = params.copy()
 
         # 4. Project each landmark into image, given current pose estimate.
         for i in np.arange(tp):
-            pass
+            # Fill Jacobian (linearization of projection model about each point)
+            input_Wpt = Wpts[:, i].reshape(-1,1)
+            J[i:i+2,:] = find_jacobian(K, hpose_from_epose(params), input_Wpt)
+            # Transform world point to camera frame
+            p = (input_Wpt - params[0:3].reshape(3,-1)).reshape(-1,1)
+            # Pinhole model projection
+            x_est = K @ (hpose_from_epose(params)[:3,:3]).T @ p
+            x_est = (x_est / x_est[2])[0:2]
+            # Compute residuals based on image truth and estimated projection
+            dY[i:i+2,:] = x_est - Ipts[:, i].reshape(-1,1)
 
         # 5. Solve system of normal equations for this iteration.
-        # ...
+        # Use NLS equations to update the current estimate
+        dx = -inv(J.T @ J) @ J.T @ dY
+        params = params + dx
 
         # 6. Check - converged?
         diff = norm(params - params_prev)
@@ -84,7 +95,7 @@ def pose_estimate_nls(K, Twc_guess, Ipts, Wpts):
         iter += 1
 
     # 7. Compute and return homogeneous pose matrix Twc.
-
+    Twc = hpose_from_epose(params)
     #------------------
 
     correct = isinstance(Twc, np.ndarray) and \
