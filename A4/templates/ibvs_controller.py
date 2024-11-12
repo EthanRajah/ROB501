@@ -27,13 +27,11 @@ def ibvs_controller(K, pts_des, pts_obs, zs, gain):
     v = np.zeros((6, 1))
 
     #--- FILL ME IN ---
-
     # Initialize stacked Jacobian matrix
-    J = np.zeros((2 * len(pts_des[1]), 6))
+    J = np.zeros((2 * pts_des.shape[1], 6))
     # Compute the Jacobian for each point and stack them
-    for i in range(len(pts_des)):
-        J[2*i:2*i+2, :] = ibvs_jacobian(K, pts_obs[:, i], zs[i])
-    
+    for i in range(pts_des.shape[1]):
+        J[2*i:2*i+2, :] = ibvs_jacobian(K, pts_obs[:, i].reshape(-1, 1), zs[i])
     # Implement proportional controller by calculating the error between the observed and desired points and multiplying by the gain
     error = pts_des - pts_obs
     error = error.flatten(order='F').reshape(-1, 1)

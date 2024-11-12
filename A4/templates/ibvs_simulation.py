@@ -104,3 +104,5 @@ def ibvs_simulation(Twc_init,
         
         # Increment counter.
         i += 1
+        if i == MAX_ITERS:
+            print("Maximum iterations reached for gain = ", gain)

@@ -27,7 +27,20 @@ def ibvs_depth_finder(K, pts_obs, pts_prev, v_cam):
     zs_est = np.zeros(n)
 
     #--- FILL ME IN ---
-
+    # Loop through all points, calculate the Jacobian for each point and solve for the estimated depth
+    for i in range(n):
+        # Define J_t and J_w matrices which are decomposed from the Jacobian matrix
+        J_t = np.zeros((2, 3))
+        J_w = np.zeros((2, 3))
+        # Compute the Jacobian with Z = 1
+        J = ibvs_jacobian(K, pts_obs[:, i].reshape(-1, 1), z=1)
+        J_t = J[:, 0:3]
+        J_w = J[:, 3:6]
+        # Define A and b matrices to solve for the depth
+        A = J_t @ v_cam[0:3]
+        b = (pts_obs[:, i] - pts_prev[:, i]).reshape(-1, 1) - J_w @ v_cam[3:6]
+        # Calculate the estimated depth using Ax = b form, where x = 1/z using least squares
+        zs_est[i] = 1 / (inv(A.T @ A) @ A.T @ b)
     #------------------
 
     correct = isinstance(zs_est, np.ndarray) and \

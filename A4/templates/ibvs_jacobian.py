@@ -22,18 +22,12 @@ def ibvs_jacobian(K, pt, z):
 
     #--- FILL ME IN ---
 
-    # Convert image plane point to normalized image plane coordinates
-    pt = pt / z
-
     # Initialize Jacobian matrix and components needed for calculation
     J = np.zeros((2, 6))
     f = K[0, 0]
-    x = pt[0]
-    y = pt[1]
-
-    # Calculate ubar, vbar to be the normalized image plane coordinates based on pixel coordinates
-    ubar = f * x
-    vbar = f * y
+    # Calculate ubar and vbar as the normalized image plane coordinates based on pixel coordinates. rho is 1 since f is the same for x and y.
+    ubar = pt[0] - K[0, 2]
+    vbar = pt[1] - K[1, 2]
 
     # Calculate Jacobian matrix
     # First row
